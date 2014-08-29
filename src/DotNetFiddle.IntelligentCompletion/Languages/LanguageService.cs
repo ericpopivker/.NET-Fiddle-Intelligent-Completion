@@ -492,6 +492,7 @@ namespace DotNetFiddle.IntelligentCompletion
 
         private string GetSystemXmlFilesDir()
         {
+			// TODO: this needs to be moved outside and used just for Windows as this method isn't cross platform
             string programFilesDir;
             //From http://stackoverflow.com/questions/194157/c-sharp-how-to-get-program-files-x86-on-windows-vista-64-bit
             if (8 == IntPtr.Size ||
