@@ -66,16 +66,9 @@ namespace DotNetFiddle.IntelligentCompletion
         // http://stackoverflow.com/questions/13601412/compilation-errors-when-dealing-with-c-sharp-script-using-roslyn
         protected SyntaxTree ParseSyntaxTree(string code, VisualBasicParseOptions parseOptions, string path = "")
         {
-            var tree = VisualBasicSyntaxTree.ParseText(code, path, parseOptions);
+			var tree = VisualBasicSyntaxTree.ParseText(code, parseOptions, path);
             return tree;
         }
-
-        public override SyntaxTree ParseSyntaxTreeFile(string filePath)
-        {
-            var tree = VisualBasicSyntaxTree.ParseFile(filePath, _options);
-            return tree;
-        }
-
 
         public override SyntaxTree ParseSyntaxTreeText(string code, string path = "")
         {

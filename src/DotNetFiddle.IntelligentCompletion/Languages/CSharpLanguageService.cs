@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -35,12 +36,6 @@ namespace DotNetFiddle.IntelligentCompletion
         public override SyntaxTree ParseSyntaxTreeText(string code, string path = "")
         {
             var tree = ParseSyntaxTree(code, _options, path);
-            return tree;
-        }
-
-        public override SyntaxTree ParseSyntaxTreeFile(string filePath)
-        {
-            var tree = CSharpSyntaxTree.ParseFile(filePath, _options);
             return tree;
         }
 
@@ -96,7 +91,7 @@ namespace DotNetFiddle.IntelligentCompletion
 
         protected SyntaxTree ParseSyntaxTree(string code, CSharpParseOptions parseOptions, string path = "")
         {
-            var tree = CSharpSyntaxTree.ParseText(code, path, parseOptions);
+            var tree = CSharpSyntaxTree.ParseText(code, parseOptions, path);
             return tree;
         }
 

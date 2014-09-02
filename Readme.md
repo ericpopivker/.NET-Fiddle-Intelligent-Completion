@@ -9,6 +9,12 @@ It based on [Roslyn](https://roslyn.codeplex.com/) and at the moment supports tw
 
 ----------
 
+Linux\Mac
+-------------
+Currently Roslyn doesn't support Linux\Mac fully, but Mono has [own forked project](https://github.com/mono/roslyn) that updates from Roslyn repository with Mono's fixes and Mono's team is trying make it up to date.  We built Mono's Roslyn version and saved it as libraries in `packages\libs` folder. Thath's why we don't use NuGet for now.
+
+Current version of `.NET Fiddle Intelligent Completion` is tested under Windows\Ubuntu and all tests are passed fine.
+
 
 Samples
 -------------
@@ -16,20 +22,20 @@ Samples
 
 Lets assume that you have such user code:
 
-	using System; 
-	using System.Text;
-	
-	class Program
-	{
-		public void Main()
-		{
-			var sb= new StringBuilder();
-			sb.
-	
+    using System; 
+    using System.Text;
+    
+    class Program
+    {
+        public void Main()
+        {
+            var sb= new StringBuilder();
+            sb.
+    
 Then using LanguageService classes you can get list of suggested items in the following way by passing this user code to `GetAutoCompleteItems` method:
 
-	var service = new CSharpLanguageService();
-	List<AutoCompleteItem> autoCompleteItems = service.GetAutoCompleteItems(SourceCodeString);
+    var service = new CSharpLanguageService();
+    List<AutoCompleteItem> autoCompleteItems = service.GetAutoCompleteItems(SourceCodeString);
 
 Method `GetAutoCompleteItems` also has `int` parameter that can be used to specify where is user cursor are. If parameter is omitted, then it will use the latest symbol in the source code.
 
@@ -51,7 +57,7 @@ For use cases when there are a lot of files and external references Intelligent 
         public LanguageService LanguageService { get; private set; }
 
         /// <summary>
-		/// Mapping between File IDs and Roslyn's SyntaxTrees
+        /// Mapping between File IDs and Roslyn's SyntaxTrees
         /// </summary>
         public Dictionary<string, SyntaxTree> Trees { get; internal set; }
 
@@ -102,45 +108,45 @@ Usage sample:
 
 Lets assume that we have two files:
 
-	using System;
-	
-	public class Dog
-	{
-	    public string Name {get;set;}
-	}
+    using System;
+    
+    public class Dog
+    {
+        public string Name {get;set;}
+    }
 And
 
-	using System;
-	
-	public class Program
-	{
-	    public static void Main()
-	    {
-	        var dog = new Dog();
-	        dog.
-	    }
-	}
+    using System;
+    
+    public class Program
+    {
+        public static void Main()
+        {
+            var dog = new Dog();
+            dog.
+        }
+    }
 
 Then we can use Intelligent Completionin such way:
 
-	var service = new CSharpLanguageService();
-	
-	var files = new Dictionary<string, string>()
-	{
-		{"dog.cs", dogSource},
-		{"main.cs", mainSource}
-	};
-	
-	var project = service.GetProject(files);
-	
-	// here we need to know where user cursor is. But for sample we just search for the last . symbol
-	int dotIndex = sourceMain.IndexOf(".") + 1;
-	var autoCompleteItems = service.GetAutoCompleteItems(project, "main.cs", dotIndex);
-	// autoCompleteItems will contain Name property
+    var service = new CSharpLanguageService();
+    
+    var files = new Dictionary<string, string>()
+    {
+        {"dog.cs", dogSource},
+        {"main.cs", mainSource}
+    };
+    
+    var project = service.GetProject(files);
+    
+    // here we need to know where user cursor is. But for sample we just search for the last . symbol
+    int dotIndex = sourceMain.IndexOf(".") + 1;
+    var autoCompleteItems = service.GetAutoCompleteItems(project, "main.cs", dotIndex);
+    // autoCompleteItems will contain Name property
 
 In case if Dog class is changed, then we can reload it with new source in following way:
 
-	project.ReplaceSourceFile("dog.cs", newSource);
+    project.ReplaceSourceFile("dog.cs", newSource);
 
 `"dog.cs"` is unique identifier of that source file that will be used during auto completion. We can also specify full path to files on file system, and then identifier will be full path to the file.
 

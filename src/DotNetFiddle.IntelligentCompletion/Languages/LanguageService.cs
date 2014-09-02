@@ -20,11 +20,13 @@ namespace DotNetFiddle.IntelligentCompletion
         protected LanguageService()
             : this(new LanguageServiceOptions())
         {
+
         }
 
         protected LanguageService(LanguageServiceOptions options)
         {
             _options = options ?? new LanguageServiceOptions();
+			_systemXmlFilesDir = GetSystemXmlFilesDir();
         }
 
         private string _systemXmlFilesDir;
@@ -36,7 +38,6 @@ namespace DotNetFiddle.IntelligentCompletion
         public abstract Type GetSyntaxTreeType();
 
         public abstract SyntaxTree ParseSyntaxTreeText(string code, string path = "");
-        public abstract SyntaxTree ParseSyntaxTreeFile(string filePath);
 
         public abstract Compilation CreateCompilation(
             string compilatioName,
@@ -419,14 +420,16 @@ namespace DotNetFiddle.IntelligentCompletion
                 ? assemblyDisplayNameOrPath
                 : AssemblyHelper.GetAssemblyLocation(assemblyDisplayNameOrPath);
 
-            string xmlFile = Path.Combine(_systemXmlFilesDir, assemblyDisplayNameOrPath + ".xml");
-
             DocumentationProvider documentationProvider = null;
-            if (includeDocumentation.Value && File.Exists(xmlFile))
-            {
-                documentationProvider = DocumentationProviderFactory.Create(xmlFile);
-            }
+			if (!string.IsNullOrWhiteSpace(_systemXmlFilesDir))
+			{
+				string xmlFile = Path.Combine(_systemXmlFilesDir, assemblyDisplayNameOrPath + ".xml");
 
+				if (includeDocumentation.Value && File.Exists(xmlFile))
+				{
+					documentationProvider = DocumentationProviderFactory.Create(xmlFile);
+				}
+			}
             return new MetadataFileReference(assemblyFullPath, MetadataReferenceProperties.Assembly,
                 documentationProvider);
         }
@@ -452,7 +455,6 @@ namespace DotNetFiddle.IntelligentCompletion
             List<string> codes)
         {
             var includeDocumentation = _options.ParseDocumenation;
-            _systemXmlFilesDir = GetSystemXmlFilesDir();
 
             MetadataReference mscorlib = CreateMetadataReference("mscorlib", includeDocumentation);
             var metaDllReferences = new List<MetadataReference> {mscorlib};
@@ -492,8 +494,11 @@ namespace DotNetFiddle.IntelligentCompletion
 
         private string GetSystemXmlFilesDir()
         {
-			// TODO: this needs to be moved outside and used just for Windows as this method isn't cross platform
-            string programFilesDir;
+			// TODO: update base path for XML documenation for Mono
+			if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+				return null;
+
+			string programFilesDir;
             //From http://stackoverflow.com/questions/194157/c-sharp-how-to-get-program-files-x86-on-windows-vista-64-bit
             if (8 == IntPtr.Size ||
                 (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432"))))
@@ -517,7 +522,7 @@ namespace DotNetFiddle.IntelligentCompletion
             bool isStaticContext,
             Language language)
         {
-            var autoCompleteItemsQuery = symbols.ToList().AsParallel();
+            var autoCompleteItemsQuery = symbols.ToList() as IEnumerable<ISymbol>;//.AsParallel(); Mono has issue with AsParallel, so for now we do it in simple way
 
             //if for new keyowrd - get only named types or namespaces
             //if in staticcontext - get static members only
@@ -750,5 +755,14 @@ namespace DotNetFiddle.IntelligentCompletion
 
             return usingNamespaces;
         }
+
+		public SyntaxTree ParseSyntaxTreeFile(string filePath)
+		{
+			// since Roslyn is Portable lib now, they removed method for ParseFIle
+			var content = File.ReadAllText(filePath);
+			var tree = this.ParseSyntaxTreeText(content, filePath);
+			return tree;
+		}
+
     }
 }
